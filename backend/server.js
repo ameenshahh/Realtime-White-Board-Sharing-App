@@ -12,12 +12,26 @@ app.get("/", (req, res) => {
     res.send("mern realtime board sharing application")
 })
 
+let roomIdGlobal, imageURLGlobal
+
 io.on("connection", (socket) => {
     console.log("user connected")
     socket.on("userJoined", (data) => {
         const { name, userId, roomId, host, presenter } = data
+        roomIdGlobal = roomId 
         socket.join(roomId)
         socket.emit("userIsJoined", { success: true })
+        socket.broadcast.to(roomId).emit("whiteBoardDataResponse",{
+            imageURL: imageURLGlobal
+        })
+    })
+
+    socket.on("whiteboardData", (data) => {
+        imageURLGlobal = data
+        const { name, userId, roomId, host, presenter } = data
+        socket.broadcast.to(roomIdGlobal).emit("whiteBoardDataResponse",{
+            imageURL: data
+        })
     })
 })
 

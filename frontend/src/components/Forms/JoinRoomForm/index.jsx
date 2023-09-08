@@ -39,7 +39,6 @@ const JoinRoomForm = ({ uuid, socket, setUser }) => {
                 <input
                     type="text"
                     className='form-control my-2 border-0'
-                    disabled
                     placeholder='Enter room code'
                     value={roomId}
                     onChange={(e) => setRoomId(e.target.value)}

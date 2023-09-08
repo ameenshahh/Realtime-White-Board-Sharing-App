@@ -9,11 +9,33 @@ const WhiteBoard = ({
   elements,
   setElements,
   tool,
-  color
+  color,
+  user,
+  socket
 }) => {
+  
+  const [image, setImage] = useState(null)
+
+  useEffect(() => {
+    socket.on("whiteBoardDataResponse", (data) => {
+      setImage(data.imageURL)
+    })
+  
+    
+  }, [])
+
+
+  if (!user?.presenter) {
+    return (
+      <div className="border border-dark border-3 h-100 w-100 overflow-hidden">
+        <img src={img} alt="Realtime whiteboard image shared by presenter" className='h-100 w-100' />
+      </div>
+    )
+
+  }
+
 
   const [isDrawing, setIsDrawing] = useState(false)
-
   useEffect(() => {
     const canvas = canvasRef.current
     canvas.height = window.innerHeight * 2
@@ -32,55 +54,60 @@ const WhiteBoard = ({
   }, [color])
 
   useLayoutEffect(() => {
-    const roughCanvas = rough.canvas(canvasRef.current)
-    if (elements.length > 0) {
-      ctxRef.current.clearRect(
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      )
-    }
-    elements.forEach(element => {
-      if (element.type === "rect") {
-        roughCanvas.draw(
-          roughGenerator.rectangle(
-            element.offsetX,
-            element.offsetY,
-            element.width,
-            element.height,
-            {
-              stroke: element.stroke,
-              strokeWidth: 5,
-              roughness: 0
-            }
-          )
-        )
-      } else if (element.type === "pencil") {
-        roughCanvas.linearPath(
-          element.path,
-          {
-            stroke: element.stroke,
-            strokeWidth: 5,
-            roughness: 0
-          }
-        )
-      } else if (element.type === "line") {
-        roughCanvas.draw(
-          roughGenerator.line(
-            element.offsetX,
-            element.offsetY,
-            element.width,
-            element.height,
-            {
-              stroke: element.stroke,
-              strokeWidth: 5,
-              roughness: 0
-            }
-          )
+    if (canvasRef) {
+      const roughCanvas = rough.canvas(canvasRef.current)
+      if (elements.length > 0) {
+        ctxRef.current.clearRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
         )
       }
-    })
+      elements.forEach(element => {
+        if (element.type === "rect") {
+          roughCanvas.draw(
+            roughGenerator.rectangle(
+              element.offsetX,
+              element.offsetY,
+              element.width,
+              element.height,
+              {
+                stroke: element.stroke,
+                strokeWidth: 5,
+                roughness: 0
+              }
+            )
+          )
+        } else if (element.type === "pencil") {
+          roughCanvas.linearPath(
+            element.path,
+            {
+              stroke: element.stroke,
+              strokeWidth: 5,
+              roughness: 0
+            }
+          )
+        } else if (element.type === "line") {
+          roughCanvas.draw(
+            roughGenerator.line(
+              element.offsetX,
+              element.offsetY,
+              element.width,
+              element.height,
+              {
+                stroke: element.stroke,
+                strokeWidth: 5,
+                roughness: 0
+              }
+            )
+          )
+        }
+      })
+
+      const canvasImage = canvasRef.current.toDataURL()
+      socket.emit("whitboardData", canvasImage)
+    }
   }, [elements])
 
   const handleMouseDown = (e) => {
@@ -182,15 +209,11 @@ const WhiteBoard = ({
   }
 
   const handleMouseUp = (e) => {
-    // console.log("mouse up", e)
-    // const { offsetX, offsetY } = e.nativeEvent
-    // console.log(offsetX, offsetY)
     setIsDrawing(false)
   }
 
+
   return (
-    // <>
-    //   {JSON.stringify(elements)}
     <div
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -202,7 +225,6 @@ const WhiteBoard = ({
         ref={canvasRef}
       />
     </div>
-    // </>
   )
 }
 

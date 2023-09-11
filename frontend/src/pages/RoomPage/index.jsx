@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import "./index.css"
 import WhiteBoard from "../../components/Whiteboard"
 
@@ -11,6 +11,14 @@ const RoomPage = ({ user, socket, users }) => {
     const [elements, setElements] = useState([])
     const [history, setHistory] = useState([])
     const [openedUserTab, setOpenedUserTab] = useState(false)
+    const [openedChatTab, setOpenedChatTab] = useState(false)
+
+    useEffect(() => {
+        return () => {
+            socket.emit("userLeft", user)
+        }
+    }, [])
+
 
     const handleClearCanvas = () => {
         const canvas = canvasRef.current
@@ -44,14 +52,30 @@ const RoomPage = ({ user, socket, users }) => {
                     display: "block",
                     position: "absolute",
                     top: "5%",
-                    left: "5%",
+                    left: "3%",
                     height: "40px",
                     width: "100px"
                 }}
-                onClick={()=> setOpenedUserTab(true)}
+                onClick={() => setOpenedUserTab(true)}
 
             >
                 Users
+            </button>
+
+            <button
+                type="button"
+                className="btn btn-primary"
+                style={{
+                    display: "block",
+                    position: "absolute",
+                    top: "5%",
+                    left: "10%",
+                    height: "40px",
+                    width: "100px"
+                }}
+                onClick={() => setOpenedChatTab(true)}
+            >
+                Chats
             </button>
             {
                 openedUserTab && (
@@ -62,7 +86,7 @@ const RoomPage = ({ user, socket, users }) => {
                         <button
                             type="button"
                             className="btn btn-light btn-block w-100 mt-5"
-                            onClick={()=> setOpenedUserTab(false)}
+                            onClick={() => setOpenedUserTab(false)}
                         >
                             Close
                         </button>
@@ -77,6 +101,10 @@ const RoomPage = ({ user, socket, users }) => {
                         </div>
                     </div>
                 )
+            }
+
+            {
+                openedChatTab && <Chat setOpenedChatTab={setOpenedChatTab} socket={socket}/>
             }
 
             <h1 className="text-center py-4">White board sharing app <span className="text-primary">[Users Online : {users.length}]</span></h1>

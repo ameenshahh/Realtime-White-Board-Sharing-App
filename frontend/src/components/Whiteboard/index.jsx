@@ -13,22 +13,30 @@ const WhiteBoard = ({
   user,
   socket
 }) => {
-  
+
   const [image, setImage] = useState(null)
 
   useEffect(() => {
     socket.on("whiteBoardDataResponse", (data) => {
       setImage(data.imageURL)
     })
-  
-    
+
+
   }, [])
 
 
   if (!user?.presenter) {
     return (
       <div className="border border-dark border-3 h-100 w-100 overflow-hidden">
-        <img src={img} alt="Realtime whiteboard image shared by presenter" className='h-100 w-100' />
+        <img
+          src={img}
+          alt="Realtime whiteboard image shared by presenter"
+          // className='h-100 w-100'
+          style={{
+            height: window.innerHeight * 2,
+            width: "285%"
+          }}
+        />
       </div>
     )
 
